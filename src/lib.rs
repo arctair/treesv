@@ -12,7 +12,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn echo_line_from_file() {
+    fn parse_delimited_rows() {
         let mut temporary_directory = TemporaryDirectory::new();
         let path = temporary_directory.get_child_path();
 

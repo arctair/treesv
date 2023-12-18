@@ -19,9 +19,9 @@ mod tests {
         fs::write(&path, "token1\ttoken2\ntoken3").unwrap();
 
         let file = File::open(path).unwrap();
-        let treesv = TreeSVReader::new(file);
+        let reader = DelimitedRowsReader::new(file);
 
-        let rows = treesv.rows()
+        let rows = reader.rows()
             .map(Result::unwrap)
             .collect::<Vec<Vec<String>>>();
 
@@ -30,13 +30,13 @@ mod tests {
 }
 
 
-struct TreeSVReader {
+struct DelimitedRowsReader {
     buffered_reader: BufReader<File>,
 }
 
-impl TreeSVReader {
-    fn new(file: File) -> TreeSVReader {
-        TreeSVReader { buffered_reader: BufReader::new(file) }
+impl DelimitedRowsReader {
+    fn new(file: File) -> DelimitedRowsReader {
+        DelimitedRowsReader { buffered_reader: BufReader::new(file) }
     }
 
     fn rows(self) -> impl Iterator<Item=Result<Vec<String>, Error>> {

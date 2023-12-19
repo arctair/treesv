@@ -23,9 +23,11 @@ mod tests {
 
         let mut rows = reader.rows();
 
-        assert_eq!(rows.next(), Some(vec!["token1".to_string(), "token2".to_string()]));
-        assert_eq!(rows.next(), Some(vec!["token3".to_string()]));
-        assert_eq!(rows.next(), None);
+        assert_rows_eq!(
+            rows,
+            ["token1", "token2"],
+            ["token3"]
+        );
     }
 
     #[test]
@@ -82,4 +84,14 @@ impl DelimitedRowsWriter {
         }
         self.buffered_writer.flush()
     }
+}
+
+#[macro_export]
+macro_rules! assert_rows_eq {
+    ( $left:expr, $( [ $($x:expr),* ] ),* ) => {
+        $(
+            assert_eq!($left.next(), Some(vec![$($x.to_string()),*]));
+        )*
+        assert_eq!($left.next(), None);
+    };
 }

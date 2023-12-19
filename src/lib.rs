@@ -18,10 +18,8 @@ mod tests {
 
         fs::write(&path, "token1\ttoken2\ntoken3").unwrap();
 
-        let mut rows = File::open(path).unwrap().rows();
-
         assert_rows_eq!(
-            rows,
+            File::open(&path).unwrap().rows(),
             ["token1", "token2"],
             ["token3"]
         );
@@ -92,10 +90,11 @@ impl DelimitedRowsWriter {
 #[macro_export]
 macro_rules! assert_rows_eq {
     ( $left:expr, $( [ $($x:expr),* ] ),* ) => {
+        let mut iterator = $left;
         $(
-            assert_eq!($left.next(), Some(vec![$($x.to_string()),*]));
+            assert_eq!(iterator.next(), Some(vec![$($x.to_string()),*]));
         )*
-        assert_eq!($left.next(), None);
+        assert_eq!(iterator.next(), None);
     };
 }
 

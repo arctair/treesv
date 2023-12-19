@@ -18,10 +18,7 @@ mod tests {
 
         fs::write(&path, "token1\ttoken2\ntoken3").unwrap();
 
-        let file = File::open(path).unwrap();
-        let reader = DelimitedRowsReader::new(file);
-
-        let mut rows = reader.rows();
+        let mut rows = File::open(path).unwrap().rows();
 
         assert_rows_eq!(
             rows,
@@ -48,14 +45,23 @@ mod tests {
     }
 }
 
+pub trait FileToRowsExtension {
+    fn rows(self) -> Box<dyn Iterator<Item=Vec<String>>>;
+}
+
+impl FileToRowsExtension for File {
+    fn rows(self) -> Box<dyn Iterator<Item=Vec<String>>> {
+        Box::new(DelimitedRowsReader::new(BufReader::new(self)).rows())
+    }
+}
 
 struct DelimitedRowsReader {
     buffered_reader: BufReader<File>,
 }
 
 impl DelimitedRowsReader {
-    fn new(file: File) -> DelimitedRowsReader {
-        DelimitedRowsReader { buffered_reader: BufReader::new(file) }
+    fn new(buffered_reader: BufReader<File>) -> DelimitedRowsReader {
+        DelimitedRowsReader { buffered_reader }
     }
 
     fn rows(self) -> impl Iterator<Item=Vec<String>> {

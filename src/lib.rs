@@ -33,21 +33,18 @@ mod tests {
     #[test]
     fn serialize_delimited_rows() {
         let mut temporary_directory = TemporaryDirectory::new();
-        let read_path = temporary_directory.get_child_path();
         let write_path = temporary_directory.get_child_path();
-
-        let contents = "token1\ttoken2\ntoken3\n";
-        fs::write(&read_path, contents).unwrap();
-
-        let read_file = File::open(read_path).unwrap();
-        let reader = DelimitedRowsReader::new(read_file);
-
         let write_file = File::create(&write_path).unwrap();
         let mut writer = DelimitedRowsWriter::new(write_file);
 
-        writer.write(reader.rows()).expect("rows to be written");
+        let rows = rows![
+            ["token1", "token2"],
+            ["token3"]
+        ];
 
-        assert_eq!(fs::read_to_string(write_path).unwrap(), contents);
+        writer.write(rows).unwrap();
+
+        assert_eq!(fs::read_to_string(write_path).unwrap(), "token1\ttoken2\ntoken3\n");
     }
 }
 
@@ -94,4 +91,11 @@ macro_rules! assert_rows_eq {
         )*
         assert_eq!($left.next(), None);
     };
+}
+
+#[macro_export]
+macro_rules! rows {
+    ( $( [ $($x:expr),* ] ),* ) => {
+        vec![$(vec![$($x.to_string()),*]),*].into_iter()
+    }
 }

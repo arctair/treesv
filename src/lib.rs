@@ -21,9 +21,11 @@ mod tests {
         let file = File::open(path).unwrap();
         let reader = DelimitedRowsReader::new(file);
 
-        let rows = reader.rows().collect::<Vec<Vec<String>>>();
+        let mut rows = reader.rows();
 
-        assert_eq!(rows, vec![vec!["token1", "token2"], vec!["token3"]]);
+        assert_eq!(rows.next(), Some(vec!["token1".to_string(), "token2".to_string()]));
+        assert_eq!(rows.next(), Some(vec!["token3".to_string()]));
+        assert_eq!(rows.next(), None);
     }
 
     #[test]

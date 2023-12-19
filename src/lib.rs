@@ -21,9 +21,7 @@ mod tests {
         let file = File::open(path).unwrap();
         let reader = DelimitedRowsReader::new(file);
 
-        let rows = reader.rows()
-            .map(Result::unwrap)
-            .collect::<Vec<Vec<String>>>();
+        let rows = reader.rows().collect::<Vec<Vec<String>>>();
 
         assert_eq!(rows, vec![vec!["token1", "token2"], vec!["token3"]]);
     }
@@ -43,8 +41,7 @@ mod tests {
         let write_file = File::create(&write_path).unwrap();
         let mut writer = DelimitedRowsWriter::new(write_file);
 
-        let rows = reader.rows().map(Result::unwrap);
-        writer.write(rows).expect("rows to be written");
+        writer.write(reader.rows()).expect("rows to be written");
 
         assert_eq!(fs::read_to_string(write_path).unwrap(), contents);
     }
@@ -60,12 +57,9 @@ impl DelimitedRowsReader {
         DelimitedRowsReader { buffered_reader: BufReader::new(file) }
     }
 
-    fn rows(self) -> impl Iterator<Item=Result<Vec<String>, Error>> {
-        self.buffered_reader.lines().map(|line| {
-            match line {
-                Err(string) => Err(string),
-                Ok(line_present) => Ok(line_present.split("\t").map(str::to_string).collect())
-            }
+    fn rows(self) -> impl Iterator<Item=Vec<String>> {
+        self.buffered_reader.lines().map(Result::unwrap).map(|line| {
+            line.split("\t").map(str::to_string).collect()
         })
     }
 }

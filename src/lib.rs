@@ -1,4 +1,5 @@
-#[cfg(test)]
+mod balance;
+
 mod serialization;
 
 #[cfg(test)]

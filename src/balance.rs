@@ -6,9 +6,9 @@ mod tests {
     #[test]
     fn balance() {
         let balance: i32 = rows![
-            ["debit"],
-            ["125"],
-            ["500"]
+            ["", "debit"],
+            ["", "125"],
+            ["", "500"]
         ].balance::<Vec<String>>();
 
         assert_eq!(balance, 625);
@@ -29,7 +29,7 @@ trait Balance<A = Self> {
 
 impl Balance for Vec<String> {
     fn balance<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
-        iter.next().unwrap();
-        iter.map(|row| row[0].parse::<i32>().expect("to have parsed debit value")).sum()
+        let index = iter.next().unwrap().iter().position(|field_name| field_name == "debit").expect("to have found debit header");
+        iter.map(|row| row[index].parse::<i32>().expect("to have parsed debit value")).sum()
     }
 }

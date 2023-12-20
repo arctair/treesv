@@ -29,7 +29,20 @@ trait Balance<A = Self> {
 
 impl Balance for Vec<String> {
     fn balance<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
-        let index = iter.next().unwrap().iter().position(|field_name| field_name == "debit").expect("to have found debit header");
-        iter.map(|row| row[index].parse::<i32>().expect("to have parsed debit value")).sum()
+        let schema = Schema { field_names: iter.next().unwrap() };
+        let position = schema.position("debit");
+        iter.map(|row| row[position].parse::<i32>().expect("to have parsed debit value")).sum()
+    }
+}
+
+struct Schema {
+    field_names: Vec<String>,
+}
+
+impl Schema {
+    fn position(self, field_name: &str) -> usize {
+        self.field_names.iter()
+            .position(|check_field_name| check_field_name == field_name)
+            .expect("to have found field position by name")
     }
 }

@@ -1,3 +1,6 @@
+use std::marker::PhantomData;
+use std::str::FromStr;
+
 #[cfg(test)]
 mod tests {
     use crate::{rows};
@@ -23,15 +26,15 @@ trait BalanceExtension: Iterator {
 
 impl<I: Iterator> BalanceExtension for I {}
 
-trait Balance<A = Self> {
-    fn balance<I>(iter: I) -> i32 where I: Iterator<Item=A>;
+trait Balance<Item = Self> {
+    fn balance<I>(iter: I) -> i32 where I: Iterator<Item=Item>;
 }
 
 impl Balance for Vec<String> {
     fn balance<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
         let schema = Schema { field_names: iter.next().unwrap() };
-        let position = schema.position("debit");
-        iter.map(|row| row[position].parse::<i32>().expect("to have parsed debit value")).sum()
+        let field = schema.field::<i32>("debit");
+        iter.map(|row| field.get(&row).unwrap()).sum()
     }
 }
 
@@ -40,9 +43,28 @@ struct Schema {
 }
 
 impl Schema {
-    fn position(self, field_name: &str) -> usize {
+    fn field<T>(&self, field_name: &str) -> SchemaField<T> {
+        SchemaField {
+            phantom_data: PhantomData {},
+            position: self.position(field_name),
+        }
+    }
+
+    fn position(&self, field_name: &str) -> usize {
         self.field_names.iter()
             .position(|check_field_name| check_field_name == field_name)
             .expect("to have found field position by name")
+    }
+}
+
+
+struct SchemaField<T> {
+    phantom_data: PhantomData<T>,
+    position: usize,
+}
+
+impl<T: FromStr> SchemaField<T> {
+    fn get(&self, row: &Vec<String>) -> Result<T, T::Err> {
+        row[self.position].parse::<T>()
     }
 }

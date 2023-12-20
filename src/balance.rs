@@ -4,7 +4,7 @@ use std::str::FromStr;
 #[cfg(test)]
 mod tests {
     use crate::{rows};
-    use crate::balance::BalanceExtension;
+    use crate::balance::IteratorBalanceSheet;
 
     #[test]
     fn balance() {
@@ -12,26 +12,26 @@ mod tests {
             ["", "debit"],
             ["", "125"],
             ["", "500"]
-        ].balance::<Vec<String>>();
+        ].balance_sheet::<Vec<String>>();
 
         assert_eq!(balance, 625);
     }
 }
 
-trait BalanceExtension: Iterator {
-    fn balance<B>(self) -> i32 where B: Balance<Self::Item>, Self: Sized {
-        B::balance(self)
+trait IteratorBalanceSheet: Iterator {
+    fn balance_sheet<B>(self) -> i32 where B: BalanceSheet<Self::Item>, Self: Sized {
+        B::balance_sheet(self)
     }
 }
 
-impl<I: Iterator> BalanceExtension for I {}
+impl<I: Iterator> IteratorBalanceSheet for I {}
 
-trait Balance<Item = Self> {
-    fn balance<I>(iter: I) -> i32 where I: Iterator<Item=Item>;
+trait BalanceSheet<Item = Self> {
+    fn balance_sheet<I>(iter: I) -> i32 where I: Iterator<Item=Item>;
 }
 
-impl Balance for Vec<String> {
-    fn balance<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
+impl BalanceSheet for Vec<String> {
+    fn balance_sheet<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
         let schema = Schema { field_names: iter.next().unwrap() };
         let field = schema.field::<i32>("debit");
         iter.map(|row| field.get(&row).unwrap()).sum()

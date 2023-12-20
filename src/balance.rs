@@ -1,41 +1,29 @@
 use std::marker::PhantomData;
 use std::str::FromStr;
+use std::vec::IntoIter;
 
 #[cfg(test)]
 mod tests {
     use crate::{rows};
-    use crate::balance::IteratorBalanceSheet;
+    use crate::balance::{balance_sheet};
 
     #[test]
     fn balance() {
-        let balance: i32 = rows![
+        let rows = rows![
             ["", "debit"],
             ["", "125"],
             ["", "500"]
-        ].balance_sheet::<Vec<String>>();
+        ];
+        let balance = balance_sheet(rows);
 
         assert_eq!(balance, 625);
     }
 }
 
-trait IteratorBalanceSheet: Iterator {
-    fn balance_sheet<B>(self) -> i32 where B: BalanceSheet<Self::Item>, Self: Sized {
-        B::balance_sheet(self)
-    }
-}
-
-impl<I: Iterator> IteratorBalanceSheet for I {}
-
-trait BalanceSheet<Item = Self> {
-    fn balance_sheet<I>(iter: I) -> i32 where I: Iterator<Item=Item>;
-}
-
-impl BalanceSheet for Vec<String> {
-    fn balance_sheet<I>(mut iter: I) -> i32 where I: Iterator<Item=Self> {
-        let schema = Schema { field_names: iter.next().unwrap() };
-        let field = schema.field::<i32>("debit");
-        iter.map(|row| field.get(&row).unwrap()).sum()
-    }
+fn balance_sheet(mut rows: IntoIter<Vec<String>>) -> i32 {
+    let schema = Schema { field_names: rows.next().unwrap() };
+    let field = schema.field::<i32>("debit");
+    rows.map(|row| field.get(&row).unwrap()).sum()
 }
 
 struct Schema {

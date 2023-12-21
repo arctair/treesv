@@ -41,8 +41,12 @@ pub(crate) struct SchemaField<T> {
     position: usize,
 }
 
-impl<T: FromStr> SchemaField<T> {
-    pub(crate) fn get(&self, row: &Vec<String>) -> Result<T, T::Err> {
-        row[self.position].parse::<T>()
+pub(crate) trait SchemaFieldValue {
+    fn value<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err>;
+}
+
+impl SchemaFieldValue for Vec<String> {
+    fn value<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err> {
+        self[field.position].parse::<T>()
     }
 }

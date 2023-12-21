@@ -22,10 +22,7 @@ pub(crate) struct Schema {
 
 impl Schema {
     pub(crate) fn field<T>(&self, field_name: &str) -> SchemaField<T> {
-        SchemaField {
-            phantom_data: PhantomData {},
-            position: self.position(field_name),
-        }
+        SchemaField::from(self.position(field_name))
     }
 
     fn position(&self, field_name: &str) -> usize {
@@ -38,6 +35,15 @@ impl Schema {
 pub(crate) struct SchemaField<T> {
     phantom_data: PhantomData<T>,
     position: usize,
+}
+
+impl<T> SchemaField<T> {
+    fn from(position: usize) -> SchemaField<T> {
+        SchemaField {
+            phantom_data: PhantomData {},
+            position,
+        }
+    }
 }
 
 pub(crate) trait SchemaFieldValue {

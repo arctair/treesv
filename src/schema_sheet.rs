@@ -51,25 +51,33 @@ impl TextSchemaField for Vec<String> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::schema_sheet::{CurrencySchemaField, SchemaField};
-
-    #[test]
-    fn parse_empty_as_zero() {
-        let field = SchemaField::from(0);
-        let row = vec!["".to_string()];
-        assert_eq!(row.get_currency(&field), Ok(0))
-    }
-}
-
 pub(crate) trait CurrencySchemaField {
     fn get_currency(&self, field: &SchemaField) -> Result<i32, ParseIntError>;
 }
 
 impl CurrencySchemaField for Vec<String> {
     fn get_currency(&self, field: &SchemaField) -> Result<i32, ParseIntError> {
-        match self[field.position].parse::<i32>() {
+        self[field.position].parse_currency()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::schema_sheet::ParseCurrency;
+
+    #[test]
+    fn parse_empty_as_zero() {
+        assert_eq!("".parse_currency(), Ok(0))
+    }
+}
+
+trait ParseCurrency {
+    fn parse_currency(self) -> Result<i32, ParseIntError>;
+}
+
+impl ParseCurrency for &str {
+    fn parse_currency(self) -> Result<i32, ParseIntError> {
+        match self.parse::<i32>() {
             Err(error) if *error.kind() == IntErrorKind::Empty => Ok(0),
             result => result
         }

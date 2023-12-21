@@ -35,7 +35,6 @@ impl Schema {
     }
 }
 
-
 pub(crate) struct SchemaField<T> {
     phantom_data: PhantomData<T>,
     position: usize,

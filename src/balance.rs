@@ -4,7 +4,7 @@ use std::str::FromStr;
 #[cfg(test)]
 mod tests {
     use crate::sheet;
-    use crate::balance::VecSheet;
+    use crate::balance::Sheet;
 
     #[test]
     fn balance() {
@@ -18,15 +18,22 @@ mod tests {
     }
 }
 
-struct VecSheet<I> {
-    rows: I,
+struct Sheet<I> {
+    schema: Schema,
+    records: I,
 }
 
-impl<I: Iterator<Item=Vec<String>>> VecSheet<I> {
-    fn balance_sheet(mut self) -> i32 {
-        let schema = Schema { field_names: self.rows.next().unwrap() };
-        let field = schema.field::<i32>("debit");
-        self.rows.map(|row| field.get(&row).unwrap()).sum()
+impl<I: Iterator<Item=Vec<String>>> Sheet<I> {
+    pub fn from(mut rows: I) -> Sheet<I> {
+        Sheet {
+            schema: Schema { field_names: rows.next().unwrap() },
+            records: rows,
+        }
+    }
+
+    fn balance_sheet(self) -> i32 {
+        let field = self.schema.field::<i32>("debit");
+        self.records.map(|row| field.get(&row).unwrap()).sum()
     }
 }
 

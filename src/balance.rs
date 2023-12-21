@@ -28,13 +28,13 @@ mod tests {
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
     fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
         let mut balances = BTreeMap::new();
-        let account_field = self.schema.field::<String>("account");
-        let debit_field = self.schema.field::<i32>("debit");
+        let account_field = self.schema.field("account");
+        let debit_field = self.schema.field("debit");
 
         for record in self.records {
-            let account_name = record.text(&account_field).expect("to have fetched account name field value");
-            let debit_value = record.currency(&debit_field).expect("to have parsed debit field value");
-            *balances.entry(account_name).or_insert(0) += debit_value;
+            let account_name = record.get_text(&account_field).expect("to have account name");
+            let debit_value = record.get_currency(&debit_field).expect("to have parsed debit field value");
+            *balances.entry(account_name.to_string()).or_insert(0) += debit_value;
         }
 
         let mut rows = Vec::new();

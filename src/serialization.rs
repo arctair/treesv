@@ -67,14 +67,14 @@ impl DelimitedRowsReader {
     }
 }
 
-struct DelimitedRowsWriter {
+pub struct DelimitedRowsWriter {
     buffered_writer: BufWriter<File>,
     column_separator: &'static str,
     row_separator: &'static str,
 }
 
 impl DelimitedRowsWriter {
-    fn new(file: File) -> DelimitedRowsWriter {
+    pub fn new(file: File) -> DelimitedRowsWriter {
         DelimitedRowsWriter {
             buffered_writer: BufWriter::new(file),
             column_separator: "\t",
@@ -82,7 +82,7 @@ impl DelimitedRowsWriter {
         }
     }
 
-    fn write(&mut self, iterator: impl Iterator<Item=Vec<String>>) -> Result<(), Error> {
+    pub fn write(&mut self, iterator: impl Iterator<Item=Vec<String>>) -> Result<(), Error> {
         for row in iterator {
             let line = format!("{}{}", row.join(self.column_separator), self.row_separator);
             self.buffered_writer.write(line.as_bytes())?;

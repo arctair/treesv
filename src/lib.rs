@@ -1,7 +1,7 @@
 mod balance;
 
 mod schema_sheet;
-mod serialization;
+pub mod serialization;
 
 #[cfg(test)]
 mod temporary_directory;

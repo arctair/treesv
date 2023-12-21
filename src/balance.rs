@@ -1,26 +1,29 @@
-use crate::sheet::Sheet;
+use crate::schema_sheet::SchemaSheet;
 
 #[cfg(test)]
 mod tests {
-    use crate::sheet;
-    use crate::sheet::Sheet;
+    use crate::{assert_rows_eq, sheet};
+    use crate::schema_sheet::SchemaSheet;
 
     #[test]
     fn balance() {
-        let balance = sheet![
+        let balance_sheet = sheet![
             ["", "debit"],
             ["", "125"],
             ["", "500"]
         ].balance_sheet();
 
-        assert_eq!(balance, vec![vec!["625"]]);
+        assert_rows_eq!(
+            balance_sheet,
+            ["625"]
+        );
     }
 }
 
-impl<I: Iterator<Item=Vec<String>>> Sheet<I> {
-    fn balance_sheet(self) -> Vec<Vec<String>> {
+impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
+    fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
         let field = self.schema.field::<i32>("debit");
         let balance: i32 = self.records.map(|row| field.get(&row).unwrap()).sum();
-        vec![vec![balance.to_string()]]
+        Box::new(vec![vec![balance.to_string()]].into_iter())
     }
 }

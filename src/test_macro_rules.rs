@@ -19,6 +19,6 @@ macro_rules! rows {
 #[macro_export]
 macro_rules! sheet {
     ( $( [ $($x:expr),* ] ),* ) => {
-        Sheet::from ( vec![$(vec![$($x.to_string()),*]),*].into_iter() )
+        SchemaSheet::from ( vec![$(vec![$($x.to_string()),*]),*].into_iter() )
     }
 }

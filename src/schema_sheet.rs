@@ -1,14 +1,14 @@
 use std::marker::PhantomData;
 use std::str::FromStr;
 
-pub(crate) struct Sheet<I> {
+pub(crate) struct SchemaSheet<I> {
     pub(crate) schema: Schema,
     pub(crate) records: I,
 }
 
-impl<I: Iterator<Item=Vec<String>>> Sheet<I> {
-    pub(crate) fn from(mut rows: I) -> Sheet<I> {
-        Sheet {
+impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
+    pub(crate) fn from(mut rows: I) -> SchemaSheet<I> {
+        SchemaSheet {
             schema: Schema { field_names: rows.next().unwrap() },
             records: rows,
         }

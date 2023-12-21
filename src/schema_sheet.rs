@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::num::{IntErrorKind, ParseIntError};
 use std::str::FromStr;
 
 pub(crate) struct SchemaSheet<I> {
@@ -46,12 +47,37 @@ impl<T> SchemaField<T> {
     }
 }
 
-pub(crate) trait SchemaFieldValue {
-    fn value<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err>;
+pub(crate) trait TextSchemaField {
+    fn text<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err>;
 }
 
-impl SchemaFieldValue for Vec<String> {
-    fn value<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err> {
+impl TextSchemaField for Vec<String> {
+    fn text<T: FromStr>(&self, field: &SchemaField<T>) -> Result<T, T::Err> {
         self[field.position].parse::<T>()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::schema_sheet::{CurrencySchemaField, SchemaField};
+
+    #[test]
+    fn parse_empty_as_zero() {
+        let field = SchemaField::<i32>::from(0);
+        let row = vec!["".to_string()];
+        assert_eq!(row.currency(&field), Ok(0))
+    }
+}
+
+pub(crate) trait CurrencySchemaField {
+    fn currency(&self, field: &SchemaField<i32>) -> Result<i32, ParseIntError>;
+}
+
+impl CurrencySchemaField for Vec<String> {
+    fn currency(&self, field: &SchemaField<i32>) -> Result<i32, ParseIntError> {
+        match self[field.position].parse::<i32>() {
+            Err(error) if *error.kind() == IntErrorKind::Empty => Ok(0),
+            result => result
+        }
     }
 }

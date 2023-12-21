@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use crate::schema_sheet::{SchemaFieldValue, SchemaSheet};
+use crate::schema_sheet::{TextSchemaField, SchemaSheet, CurrencySchemaField};
 
 #[cfg(test)]
 mod tests {
@@ -10,6 +10,7 @@ mod tests {
     fn balance() {
         let balance_sheet = sheet![
             ["account", "debit"],
+            ["assets", ""],
             ["assets", "125"],
             ["assets", "500"],
             ["expenses", "300"]
@@ -31,8 +32,8 @@ impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
         let debit_field = self.schema.field::<i32>("debit");
 
         for record in self.records {
-            let account_name = record.value(&account_field).expect("to have fetched account name field value");
-            let debit_value = record.value(&debit_field).expect("to have parsed debit field value");
+            let account_name = record.text(&account_field).expect("to have fetched account name field value");
+            let debit_value = record.currency(&debit_field).expect("to have parsed debit field value");
             *balances.entry(account_name).or_insert(0) += debit_value;
         }
 

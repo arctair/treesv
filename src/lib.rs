@@ -2,6 +2,8 @@ mod balance;
 
 mod serialization;
 
+mod sheet;
+
 #[cfg(test)]
 mod temporary_directory;
 

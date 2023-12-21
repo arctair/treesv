@@ -27,7 +27,7 @@ mod tests {
 }
 
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
-    fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
+    pub fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
         let mut balances = BTreeMap::new();
         let account_field = self.schema.field("account");
         let debit_field = self.schema.field("debit");

@@ -1,12 +1,12 @@
 use currency_rs::{Currency, CurrencyErr};
 
-pub(crate) struct SchemaSheet<I> {
+pub struct SchemaSheet<I> {
     pub(crate) schema: Schema,
     pub(crate) records: I,
 }
 
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
-    pub(crate) fn from(mut rows: I) -> SchemaSheet<I> {
+    pub fn from(mut rows: I) -> SchemaSheet<I> {
         SchemaSheet {
             schema: Schema { field_names: rows.next().unwrap() },
             records: rows,

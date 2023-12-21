@@ -1,6 +1,6 @@
 mod balance;
 
-mod schema_sheet;
+pub mod schema_sheet;
 pub mod serialization;
 
 #[cfg(test)]

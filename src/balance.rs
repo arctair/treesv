@@ -1,30 +1,42 @@
 use std::marker::PhantomData;
 use std::str::FromStr;
-use std::vec::IntoIter;
 
 #[cfg(test)]
 mod tests {
     use crate::{rows};
-    use crate::balance::{balance_sheet};
+    use crate::balance::VecSheet;
 
     #[test]
     fn balance() {
-        let rows = rows![
-            ["", "debit"],
-            ["", "125"],
-            ["", "500"]
-        ];
-        let balance = balance_sheet(rows);
+        let rows = VecSheet::from(
+            rows![
+                ["", "debit"],
+                ["", "125"],
+                ["", "500"]
+            ]
+        );
+        let balance = rows.balance_sheet();
 
         assert_eq!(balance, 625);
     }
 }
 
-fn balance_sheet(mut rows: IntoIter<Vec<String>>) -> i32 {
-    let schema = Schema { field_names: rows.next().unwrap() };
-    let field = schema.field::<i32>("debit");
-    rows.map(|row| field.get(&row).unwrap()).sum()
+struct VecSheet<I> {
+    rows: I,
 }
+
+impl<I: Iterator<Item=Vec<String>>> VecSheet<I> {
+    fn from(rows: I) -> VecSheet<I> {
+        VecSheet { rows }
+    }
+
+    fn balance_sheet(mut self) -> i32 {
+        let schema = Schema { field_names: self.rows.next().unwrap() };
+        let field = schema.field::<i32>("debit");
+        self.rows.map(|row| field.get(&row).unwrap()).sum()
+    }
+}
+
 
 struct Schema {
     field_names: Vec<String>,

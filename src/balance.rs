@@ -23,7 +23,13 @@ mod tests {
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
     fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
         let debit_field = self.schema.field::<i32>("debit");
-        let balance: i32 = self.records.map(|record| record.value(&debit_field).unwrap()).sum();
+        
+        let mut balance = 0;
+        for record in self.records {
+            let debit_value = record.value(&debit_field).expect("to have parsed debit field value");
+            balance += debit_value;
+        }
+
         Box::new(vec![vec![balance.to_string()]].into_iter())
     }
 }

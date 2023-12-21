@@ -15,3 +15,10 @@ macro_rules! rows {
         vec![$(vec![$($x.to_string()),*]),*].into_iter()
     }
 }
+
+#[macro_export]
+macro_rules! sheet {
+    ( $( [ $($x:expr),* ] ),* ) => {
+        VecSheet { rows: vec![$(vec![$($x.to_string()),*]),*].into_iter() }
+    }
+}

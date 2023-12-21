@@ -3,19 +3,16 @@ use std::str::FromStr;
 
 #[cfg(test)]
 mod tests {
-    use crate::{rows};
+    use crate::sheet;
     use crate::balance::VecSheet;
 
     #[test]
     fn balance() {
-        let rows = VecSheet::from(
-            rows![
-                ["", "debit"],
-                ["", "125"],
-                ["", "500"]
-            ]
-        );
-        let balance = rows.balance_sheet();
+        let balance = sheet![
+            ["", "debit"],
+            ["", "125"],
+            ["", "500"]
+        ].balance_sheet();
 
         assert_eq!(balance, 625);
     }
@@ -26,10 +23,6 @@ struct VecSheet<I> {
 }
 
 impl<I: Iterator<Item=Vec<String>>> VecSheet<I> {
-    fn from(rows: I) -> VecSheet<I> {
-        VecSheet { rows }
-    }
-
     fn balance_sheet(mut self) -> i32 {
         let schema = Schema { field_names: self.rows.next().unwrap() };
         let field = schema.field::<i32>("debit");

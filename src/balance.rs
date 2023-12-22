@@ -24,6 +24,33 @@ mod tests {
             ["expenses", "300.00"]
         );
     }
+
+    #[test]
+    fn exclude_empty_account_zero_balance() {
+        let balance_sheet = sheet![
+            ["account", "credit", "debit"],
+            ["", "", ""]
+        ].balance_sheet();
+
+        assert_rows_eq!(
+            balance_sheet,
+            ["account", "balance"]
+        );
+    }
+
+    #[test]
+    fn include_empty_account_non_zero_balance() {
+        let balance_sheet = sheet![
+            ["account", "credit", "debit"],
+            ["", "", " $ 1.00"]
+        ].balance_sheet();
+
+        assert_rows_eq!(
+            balance_sheet,
+            ["account", "balance"],
+            ["", "1.00"]
+        );
+    }
 }
 
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
@@ -45,7 +72,9 @@ impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
         rows.push(vec!["account".to_string(), "balance".to_string()]);
 
         for (account_name, balance) in balances {
-            rows.push(vec![account_name, balance.to_string()]);
+            if !account_name.is_empty() || balance.int_value() != 0f64 {
+                rows.push(vec![account_name, balance.to_string()]);
+            }
         }
 
         Box::new(rows.into_iter())

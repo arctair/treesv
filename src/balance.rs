@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use currency_rs::Currency;
 use crate::schema_sheet::{TextSchemaField, SchemaSheet, CurrencySchemaField};
 
 #[cfg(test)]
@@ -11,16 +12,16 @@ mod tests {
         let balance_sheet = sheet![
             ["account", "debit"],
             ["assets", ""],
-            ["assets", "125"],
-            ["assets", "500"],
-            ["expenses", "300"]
+            ["assets", " $ 125.00"],
+            ["assets", " $ 500.00"],
+            ["expenses", " $ 300.00"]
         ].balance_sheet();
 
         assert_rows_eq!(
             balance_sheet,
             ["account", "balance"],
-            ["assets", "625"],
-            ["expenses", "300"]
+            ["assets", "625.00"],
+            ["expenses", "300.00"]
         );
     }
 }
@@ -34,7 +35,8 @@ impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
         for record in self.records {
             let account_name = record.get_text(&account_field).expect("to have account name");
             let debit_value = record.get_currency(&debit_field).expect("to have parsed debit field value");
-            *balances.entry(account_name.to_string()).or_insert(0) += debit_value;
+            let balance = balances.entry(account_name.to_string()).or_insert_with(|| Currency::new_float(0f64, None));
+            *balance += debit_value;
         }
 
         let mut rows = Vec::new();

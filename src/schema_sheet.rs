@@ -1,4 +1,4 @@
-use std::num::{IntErrorKind, ParseIntError};
+use currency_rs::{Currency, CurrencyErr};
 
 pub(crate) struct SchemaSheet<I> {
     pub(crate) schema: Schema,
@@ -52,34 +52,11 @@ impl TextSchemaField for Vec<String> {
 }
 
 pub(crate) trait CurrencySchemaField {
-    fn get_currency(&self, field: &SchemaField) -> Result<i32, ParseIntError>;
+    fn get_currency(&self, field: &SchemaField) -> Result<Currency, CurrencyErr>;
 }
 
 impl CurrencySchemaField for Vec<String> {
-    fn get_currency(&self, field: &SchemaField) -> Result<i32, ParseIntError> {
-        self[field.position].parse_currency()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::schema_sheet::ParseCurrency;
-
-    #[test]
-    fn parse_empty_as_zero() {
-        assert_eq!("".parse_currency(), Ok(0))
-    }
-}
-
-trait ParseCurrency {
-    fn parse_currency(self) -> Result<i32, ParseIntError>;
-}
-
-impl ParseCurrency for &str {
-    fn parse_currency(self) -> Result<i32, ParseIntError> {
-        match self.parse::<i32>() {
-            Err(error) if *error.kind() == IntErrorKind::Empty => Ok(0),
-            result => result
-        }
+    fn get_currency(&self, field: &SchemaField) -> Result<Currency, CurrencyErr> {
+        Currency::new_string(&self[field.position], None)
     }
 }

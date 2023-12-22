@@ -10,17 +10,17 @@ mod tests {
     #[test]
     fn balance() {
         let balance_sheet = sheet![
-            ["account", "debit"],
-            ["assets", ""],
-            ["assets", " $ 125.00"],
-            ["assets", " $ 500.00"],
-            ["expenses", " $ 300.00"]
+            ["account", "credit", "debit"],
+            ["assets", "", ""],
+            ["assets", " $ 125.00", ""],
+            ["assets", "", " $ 500.00"],
+            ["expenses", "", " $ 300.00"]
         ].balance_sheet();
 
         assert_rows_eq!(
             balance_sheet,
             ["account", "balance"],
-            ["assets", "625.00"],
+            ["assets", "375.00"],
             ["expenses", "300.00"]
         );
     }
@@ -30,13 +30,15 @@ impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
     pub fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
         let mut balances = BTreeMap::new();
         let account_field = self.schema.field("account");
+        let credit_field = self.schema.field("credit");
         let debit_field = self.schema.field("debit");
 
         for record in self.records {
             let account_name = record.get_text(&account_field).expect("to have account name");
+            let credit_value = record.get_currency(&credit_field).expect("to have parsed credit field value");
             let debit_value = record.get_currency(&debit_field).expect("to have parsed debit field value");
             let balance = balances.entry(account_name.to_string()).or_insert_with(|| Currency::new_float(0f64, None));
-            *balance += debit_value;
+            *balance += debit_value - credit_value;
         }
 
         let mut rows = Vec::new();

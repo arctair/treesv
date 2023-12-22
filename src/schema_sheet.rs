@@ -1,5 +1,15 @@
 use currency_rs::{Currency, CurrencyErr};
 
+pub struct Sheet<I> {
+    pub rows: I,
+}
+
+impl<I: Iterator<Item=Vec<String>>> Sheet<I> {
+    pub fn from(rows: I) -> Sheet<I> {
+        Sheet { rows }
+    }
+}
+
 pub struct SchemaSheet<I> {
     pub(crate) schema: Schema,
     pub(crate) records: I,

@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
+use std::vec::IntoIter;
 use currency_rs::Currency;
-use crate::schema_sheet::{TextSchemaField, SchemaSheet, CurrencySchemaField};
+use crate::schema_sheet::{TextSchemaField, SchemaSheet, CurrencySchemaField, Sheet};
 
 #[cfg(test)]
 mod tests {
@@ -18,7 +19,7 @@ mod tests {
         ].balance_sheet();
 
         assert_rows_eq!(
-            balance_sheet,
+            balance_sheet.rows,
             ["account", "balance"],
             ["assets", "375.00"],
             ["expenses", "300.00"]
@@ -33,7 +34,7 @@ mod tests {
         ].balance_sheet();
 
         assert_rows_eq!(
-            balance_sheet,
+            balance_sheet.rows,
             ["account", "balance"]
         );
     }
@@ -46,7 +47,7 @@ mod tests {
         ].balance_sheet();
 
         assert_rows_eq!(
-            balance_sheet,
+            balance_sheet.rows,
             ["account", "balance"],
             ["", "1.00"]
         );
@@ -54,7 +55,7 @@ mod tests {
 }
 
 impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
-    pub fn balance_sheet(self) -> Box<dyn Iterator<Item=Vec<String>>> {
+    pub fn balance_sheet(self) -> Sheet<IntoIter<Vec<String>>> {
         let mut balances = BTreeMap::new();
         let account_field = self.schema.field("account");
         let credit_field = self.schema.field("credit");
@@ -77,6 +78,6 @@ impl<I: Iterator<Item=Vec<String>>> SchemaSheet<I> {
             }
         }
 
-        Box::new(rows.into_iter())
+        Sheet::from(rows.into_iter())
     }
 }

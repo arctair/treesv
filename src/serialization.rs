@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Error, Write};
+use crate::schema_sheet::Sheet;
 
 #[cfg(test)]
 mod tests {
@@ -28,14 +29,15 @@ mod tests {
         let mut temporary_directory = TemporaryDirectory::new();
         let write_path = temporary_directory.get_child_path();
         let write_file = File::create(&write_path).unwrap();
-        let mut writer = DelimitedRowsWriter::new(write_file);
 
         let rows = rows![
             ["token1", "token2"],
             ["token3"]
         ];
 
-        writer.write(rows).unwrap();
+        let sheet = Sheet::from(rows);
+
+        sheet.write(BufWriter::new(write_file)).unwrap();
 
         assert_eq!(fs::read_to_string(write_path).unwrap(), "token1\ttoken2\ntoken3\n");
     }
@@ -67,26 +69,14 @@ impl DelimitedRowsReader {
     }
 }
 
-pub struct DelimitedRowsWriter {
-    buffered_writer: BufWriter<File>,
-    column_separator: &'static str,
-    row_separator: &'static str,
-}
-
-impl DelimitedRowsWriter {
-    pub fn new(file: File) -> DelimitedRowsWriter {
-        DelimitedRowsWriter {
-            buffered_writer: BufWriter::new(file),
-            column_separator: "\t",
-            row_separator: "\n",
+impl<I: Iterator<Item=Vec<String>>> Sheet<I> {
+    pub fn write(self, mut buffered_writer: BufWriter<File>) -> Result<(), Error> {
+        let column_separator: &'static str = "\t";
+        let row_separator: &'static str = "\n";
+        for row in self.rows {
+            let line = format!("{}{}", row.join(column_separator), row_separator);
+            buffered_writer.write(line.as_bytes())?;
         }
-    }
-
-    pub fn write(&mut self, iterator: impl Iterator<Item=Vec<String>>) -> Result<(), Error> {
-        for row in iterator {
-            let line = format!("{}{}", row.join(self.column_separator), self.row_separator);
-            self.buffered_writer.write(line.as_bytes())?;
-        }
-        self.buffered_writer.flush()
+        buffered_writer.flush()
     }
 }

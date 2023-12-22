@@ -17,8 +17,10 @@ mod tests {
 
         fs::write(&path, "token1\ttoken2\ntoken3").unwrap();
 
+        let sheet = Sheet::from_reader(BufReader::new(File::open(&path).unwrap()));
+
         assert_rows_eq!(
-            File::open(&path).unwrap().rows(),
+            sheet.rows,
             ["token1", "token2"],
             ["token3"]
         );
@@ -43,29 +45,12 @@ mod tests {
     }
 }
 
-pub trait FileToRowsExtension {
-    fn rows(self) -> Box<dyn Iterator<Item=Vec<String>>>;
-}
-
-impl FileToRowsExtension for File {
-    fn rows(self) -> Box<dyn Iterator<Item=Vec<String>>> {
-        Box::new(DelimitedRowsReader::new(BufReader::new(self)).rows())
-    }
-}
-
-struct DelimitedRowsReader {
-    buffered_reader: BufReader<File>,
-}
-
-impl DelimitedRowsReader {
-    fn new(buffered_reader: BufReader<File>) -> DelimitedRowsReader {
-        DelimitedRowsReader { buffered_reader }
-    }
-
-    fn rows(self) -> impl Iterator<Item=Vec<String>> {
-        self.buffered_reader.lines().map(Result::unwrap).map(|line| {
-            line.split("\t").map(str::to_string).collect()
-        })
+impl Sheet<()> {
+    pub fn from_reader(buffered_reader: BufReader<File>) -> Sheet<impl Iterator<Item=Vec<String>>> {
+        let rows = buffered_reader.lines()
+            .map(Result::unwrap)
+            .map(|line| line.split("\t").map(str::to_string).collect::<Vec<String>>());
+        Sheet::from(rows)
     }
 }
 

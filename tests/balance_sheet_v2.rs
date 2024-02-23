@@ -1,19 +1,20 @@
-use indoc::indoc;
 use treesv::balance_sheet_v2::{BalanceSheet, Journal};
+use treesv::sheet_v2::SheetV2;
 
 #[test]
-fn balance_sheet_v2() {
-    let input = Journal::from(String::from(indoc! {"
-        account_name\tcredit_amount\tdebit_amount
-        credit account\t1.00\t0.00
-        debit account\t0.00\t1.00"}));
+fn balance_sheet_from_journal() {
+    let journal_sheet = SheetV2::from(vec![
+        vec!["account_name", "credit_amount", "debit_amount"],
+        vec!["credit account", "1.00", "0.00"],
+        vec!["debit account", "0.00", "1.00"],
+    ]);
 
-    let actual = BalanceSheet::from(input).to_string();
-    let expected = String::from(String::from(indoc! {"
-        account_name\tbalance_amount
-        credit account\t-$1.00
-        debit account\t$1.00
-    "}));
+    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let expected = SheetV2::from(vec![
+        vec!["account_name", "balance_amount"],
+        vec!["credit account", "-$1.00"],
+        vec!["debit account", "$1.00"],
+    ]);
 
     assert_eq!(actual, expected);
 }

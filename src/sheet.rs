@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::vec::IntoIter;
 
 #[derive(Debug, PartialEq)]
 pub struct Sheet {
@@ -59,7 +60,7 @@ impl From<Vec<Vec<String>>> for Sheet {
 }
 
 impl Sheet {
-    pub fn rows(&self) -> impl Iterator<Item=Vec<&str>> {
-        self.rows.iter().map(|row| row.iter().map(|s| s as &str).collect::<Vec<&str>>())
+    pub fn rows(self) -> IntoIter<Vec<String>> {
+        self.rows.into_iter()
     }
 }

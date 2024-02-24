@@ -11,7 +11,7 @@ fn balance_sheet_from_journal() {
         vec!["debit account", "0.00", "1.00"],
     ]);
 
-    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
         vec!["account_name", "balance_amount"],
         vec!["credit account", "-$2.00"],
@@ -28,7 +28,7 @@ fn empty_amount_is_zero() {
         vec!["account", "", ""],
     ]);
 
-    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
         vec!["account_name", "balance_amount"],
         vec!["account", "$0"],
@@ -44,7 +44,7 @@ fn google_accounting_number_format() {
         vec!["account", " $0.00 ", " $ 1.00 "],
     ]);
 
-    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
         vec!["account_name", "balance_amount"],
         vec!["account", "$1.00"],

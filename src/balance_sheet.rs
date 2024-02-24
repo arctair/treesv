@@ -3,14 +3,11 @@ use rusty_money::{iso, Money, MoneyError};
 use rusty_money::iso::Currency;
 use crate::sheet::Sheet;
 
+pub struct BalanceSheet(pub Sheet);
+
 pub struct Journal(pub Sheet);
 
-#[derive(Debug, PartialEq)]
-pub struct BalanceSheet<'a> {
-    balance_amount_by_account_name: BTreeMap<String, Money<'a, Currency>>,
-}
-
-impl From<Journal> for BalanceSheet<'_> {
+impl From<Journal> for BalanceSheet {
     fn from(Journal(sheet): Journal) -> Self {
         let mut balance_amount_by_account_name = BTreeMap::new();
         let mut rows = sheet.rows();
@@ -30,7 +27,14 @@ impl From<Journal> for BalanceSheet<'_> {
             *entry += debit_amount - credit_amount;
         }
 
-        Self { balance_amount_by_account_name }
+        let mut result = vec![];
+
+        result.push(vec![String::from("account_name"), String::from("balance_amount")]);
+        for (account_name, balance_amount) in balance_amount_by_account_name {
+            result.push(vec![account_name, balance_amount.to_string()]);
+        }
+
+        BalanceSheet(Sheet::from(result))
     }
 }
 
@@ -44,15 +48,4 @@ fn parse_money<'a>(value: &str) -> Result<Money<'a, Currency>, MoneyError> {
     let value = value.trim_start();
 
     Money::from_str(value, iso::USD)
-}
-
-impl BalanceSheet<'_> {
-    pub fn to_sheet(self) -> Sheet {
-        let mut result = vec![];
-        result.push(vec![String::from("account_name"), String::from("balance_amount")]);
-        for (account_name, balance_amount) in self.balance_amount_by_account_name {
-            result.push(vec![account_name, balance_amount.to_string()]);
-        }
-        Sheet::from(result)
-    }
 }

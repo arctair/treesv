@@ -46,11 +46,11 @@ fn parse_money<'a>(value: &str) -> Money<'a, Currency> {
 }
 
 impl BalanceSheet<'_> {
-    pub fn to_sheet(&self) -> Sheet {
+    pub fn to_sheet(self) -> Sheet {
         let mut result = vec![];
         result.push(vec![String::from("account_name"), String::from("balance_amount")]);
-        for (account_name, balance_amount) in &self.balance_amount_by_account_name {
-            result.push(vec![account_name.to_string(), balance_amount.to_string()]);
+        for (account_name, balance_amount) in self.balance_amount_by_account_name {
+            result.push(vec![account_name, balance_amount.to_string()]);
         }
         Sheet::from(result)
     }

@@ -20,3 +20,19 @@ fn balance_sheet_from_journal() {
 
     assert_eq!(actual, expected);
 }
+
+#[test]
+fn empty_amount_is_zero() {
+    let journal_sheet = Sheet::from(vec![
+        vec!["account_name", "credit_amount", "debit_amount"],
+        vec!["account", "", ""],
+    ]);
+
+    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let expected = Sheet::from(vec![
+        vec!["account_name", "balance_amount"],
+        vec!["account", "$0"],
+    ]);
+
+    assert_eq!(actual, expected);
+}

@@ -35,6 +35,10 @@ impl From<Journal> for BalanceSheet<'_> {
 }
 
 fn parse_money<'a>(value: &str) -> Money<'a, Currency> {
+    if value.is_empty() {
+        return Money::from_major(0, iso::USD);
+    }
+
     match Money::from_str(&value, iso::USD) {
         Ok(debit_amount) => debit_amount,
         Err(error) => todo!("parse money <{}>: {error}", value)

@@ -64,6 +64,25 @@ impl Sheet {
     pub fn rows(self) -> IntoIter<Vec<String>> {
         self.rows.into_iter()
     }
+
+    pub fn create_year_field(mut self, date_field_name: &str, year_field_name: &str) -> Self {
+        let mut rows = self.rows.iter_mut();
+        let schema_vec = rows.next().unwrap();
+        schema_vec.push(year_field_name.to_string());
+        let date_field_index = schema_vec.iter().position(|name| name == date_field_name).unwrap();
+        let mut copy_year = String::new();
+        for row in rows {
+            let date = &row[date_field_index];
+            if date.is_empty() {
+                row.push(copy_year.clone())
+            } else {
+                let (year, _) = date.split_at(4);
+                copy_year = year.to_string();
+                row.push(year.to_string())
+            }
+        }
+        self
+    }
 }
 
 pub struct Schema {

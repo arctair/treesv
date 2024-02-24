@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap};
+use std::collections::{BTreeMap, BTreeSet};
 use rusty_money::{iso, Money, MoneyError};
 use rusty_money::iso::Currency;
 use crate::sheet::{Schema, Sheet};
@@ -9,14 +9,18 @@ pub struct Journal(pub Sheet);
 
 impl From<Journal> for BalanceSheet {
     fn from(Journal(sheet): Journal) -> Self {
-        let mut balance_amount_by_account_name = BTreeMap::new();
-        let mut rows = sheet.rows();
+        let zero: Money<Currency> = Money::from_major(0, iso::USD);
+
+        let mut rows = sheet.create_year_field("date", "year").rows();
 
         let Some(schema) = rows.next().map(Schema::from) else { todo!("no schema") };
-        let selector = schema.selector(["account_name", "debit_amount", "credit_amount"]);
+        let selector = schema.selector(["year", "account_name", "debit_amount", "credit_amount"]);
 
+        let mut balance_amounts = BTreeMap::new();
         for record in rows {
             let mut selection = selector(record);
+
+            let year = selection.pop_front().unwrap();
 
             let mut account_name = selection.pop_front().unwrap();
             trim_mut(&mut account_name);
@@ -27,17 +31,36 @@ impl From<Journal> for BalanceSheet {
             let credit_amount = selection.pop_front().unwrap();
             let credit_amount = parse_money(credit_amount).unwrap();
 
-            let entry = balance_amount_by_account_name
-                .entry(account_name)
-                .or_insert(Money::from_major(0, iso::USD));
+            let entry = balance_amounts
+                .entry((year, account_name))
+                .or_insert(zero.clone());
             *entry += debit_amount - credit_amount;
         }
 
-        let mut result = vec![];
+        let mut years = BTreeSet::new();
+        let mut account_names = BTreeSet::new();
+        for (year, account_name) in balance_amounts.keys() {
+            years.insert(year.clone());
+            account_names.insert(account_name.clone());
+        }
 
-        result.push(vec![String::from("account_name"), String::from("balance_amount_2024")]);
-        for (account_name, balance_amount) in balance_amount_by_account_name {
-            result.push(vec![account_name, balance_amount.to_string()]);
+        let mut schema_vec = vec!["account_name".to_string()];
+        for year in &years {
+            schema_vec.insert(1, format!("balance_amount_{year}"));
+        }
+
+        let mut result = vec![schema_vec];
+        for account_name in account_names {
+            let mut result_record = vec![account_name.to_string()];
+            let mut cumulative_balance_amount = zero.clone();
+            for year in &years {
+                let key = (year.to_string(), account_name.to_string());
+                if let Some(balance_amount) = balance_amounts.remove(&key) {
+                    cumulative_balance_amount += balance_amount;
+                }
+                result_record.insert(1, cumulative_balance_amount.to_string());
+            }
+            result.push(result_record);
         }
 
         BalanceSheet(Sheet::from(result))

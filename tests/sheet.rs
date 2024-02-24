@@ -41,6 +41,28 @@ fn sheet_from_file() {
     assert_eq!(actual, expected);
 }
 
+
+#[test]
+fn create_year_field() {
+    let actual = Sheet::from(vec![
+        vec!["date"],
+        vec!["2024-01-01"],
+        vec!["2023-01-01"],
+        vec![""],
+    ]);
+
+    let actual = actual.create_year_field("date", "year");
+
+    let expected = Sheet::from(vec![
+        vec!["date", "year"],
+        vec!["2024-01-01", "2024"],
+        vec!["2023-01-01", "2023"],
+        vec!["", "2023"],
+    ]);
+
+    assert_eq!(actual, expected);
+}
+
 #[test]
 fn schema_selector() {
     let schema = Schema::from(vec!["first".to_string(), "second".to_string()]);

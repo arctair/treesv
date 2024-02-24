@@ -36,3 +36,19 @@ fn empty_amount_is_zero() {
 
     assert_eq!(actual, expected);
 }
+
+#[test]
+fn google_accounting_number_format() {
+    let journal_sheet = Sheet::from(vec![
+        vec!["account_name", "credit_amount", "debit_amount"],
+        vec!["account", " $0.00 ", " $ 1.00 "],
+    ]);
+
+    let actual = BalanceSheet::from(Journal(journal_sheet)).to_sheet();
+    let expected = Sheet::from(vec![
+        vec!["account_name", "balance_amount"],
+        vec!["account", "$1.00"],
+    ]);
+
+    assert_eq!(actual, expected);
+}

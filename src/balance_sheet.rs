@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap};
 use rusty_money::{iso, Money, MoneyError};
 use rusty_money::iso::Currency;
-use crate::sheet::Sheet;
+use crate::sheet::{Schema, Sheet};
 
 pub struct BalanceSheet(pub Sheet);
 
@@ -12,16 +12,21 @@ impl From<Journal> for BalanceSheet {
         let mut balance_amount_by_account_name = BTreeMap::new();
         let mut rows = sheet.rows();
 
-        let Some(schema) = rows.next() else { todo!("no schema") };
-        let Some(account_name_index) = schema.iter().position(|field_name| field_name == "account_name") else { todo!("no schema name account_name in {:?}", schema) };
-        let Some(debit_amount_index) = schema.iter().position(|field_name| field_name == "debit_amount") else { todo!("no schema name debit_amount in {:?}", schema) };
-        let Some(credit_amount_index) = schema.iter().position(|field_name| field_name == "credit_amount") else { todo!("no schema name credit_amount in {:?}", schema) };
+        let Some(schema) = rows.next().map(Schema::from) else { todo!("no schema") };
+        let selector = schema.selector(["account_name", "debit_amount", "credit_amount"]);
 
-        for mut record in rows {
-            let debit_amount = parse_money(&record[debit_amount_index]).unwrap();
-            let credit_amount = parse_money(&record[credit_amount_index]).unwrap();
-            let mut account_name = record.remove(account_name_index);
+        for record in rows {
+            let mut selection = selector(record);
+
+            let mut account_name = selection.pop_front().unwrap();
             trim_mut(&mut account_name);
+
+            let debit_amount = selection.pop_front().unwrap();
+            let debit_amount = parse_money(debit_amount).unwrap();
+
+            let credit_amount = selection.pop_front().unwrap();
+            let credit_amount = parse_money(credit_amount).unwrap();
+
             let entry = balance_amount_by_account_name
                 .entry(account_name)
                 .or_insert(Money::from_major(0, iso::USD));
@@ -39,7 +44,7 @@ impl From<Journal> for BalanceSheet {
     }
 }
 
-fn parse_money<'a>(value: &str) -> Result<Money<'a, Currency>, MoneyError> {
+fn parse_money<'a>(value: String) -> Result<Money<'a, Currency>, MoneyError> {
     if value.is_empty() {
         return Ok(Money::from_major(0, iso::USD));
     }

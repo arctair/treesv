@@ -1,3 +1,4 @@
+use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::vec::IntoIter;
@@ -62,5 +63,42 @@ impl From<Vec<Vec<String>>> for Sheet {
 impl Sheet {
     pub fn rows(self) -> IntoIter<Vec<String>> {
         self.rows.into_iter()
+    }
+}
+
+pub struct Schema {
+    names: Vec<String>,
+}
+
+impl From<Vec<String>> for Schema {
+    fn from(names: Vec<String>) -> Self {
+        Self { names }
+    }
+}
+
+impl Schema {
+    pub fn selector<const N: usize>(&self, take_names: [&str; N]) -> impl Fn(Vec<String>) -> VecDeque<String> {
+        let mut indexes = vec![];
+        for take_name in take_names {
+            let Some(index) = self.names.iter().position(|name| name == take_name) else { todo!("no name {take_name} in schema {:?}", self.names) };
+            indexes.push(index);
+        }
+
+        let mut indexes_in_reverse_order: [usize; N] = indexes.clone().try_into().unwrap();
+        indexes_in_reverse_order.sort();
+        indexes_in_reverse_order.reverse();
+
+        move |mut record| {
+            let mut map = BTreeMap::new();
+            for index in &indexes_in_reverse_order {
+                map.insert(index, record.remove(*index));
+            }
+
+            let mut result: VecDeque<String> = VecDeque::new();
+            for index in indexes.iter() {
+                result.push_back(map.remove(index).unwrap());
+            }
+            result
+        }
     }
 }

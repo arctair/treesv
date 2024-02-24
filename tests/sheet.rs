@@ -1,5 +1,6 @@
+use std::collections::VecDeque;
 use indoc::indoc;
-use treesv::sheet::Sheet;
+use treesv::sheet::{Schema, Sheet};
 use std::io::Write;
 use tempfile::NamedTempFile;
 
@@ -38,4 +39,26 @@ fn sheet_from_file() {
     ]);
 
     assert_eq!(actual, expected);
+}
+
+#[test]
+fn schema_selector() {
+    let schema = Schema::from(vec!["first".to_string(), "second".to_string()]);
+    let record = vec!["first value".to_string(), "second value".to_string()];
+    let take = schema.selector(["first", "second"]);
+
+    let actual = take(record);
+    let expected = VecDeque::from(["first value".to_string(), "second value".to_string()]);
+    assert_eq!(actual, expected)
+}
+
+#[test]
+fn schema_selector_reverse() {
+    let schema = Schema::from(vec!["first".to_string(), "second".to_string()]);
+    let record = vec!["first value".to_string(), "second value".to_string()];
+    let take = schema.selector(["second", "first"]);
+
+    let actual = take(record);
+    let expected = VecDeque::from(["second value".to_string(), "first value".to_string()]);
+    assert_eq!(actual, expected)
 }

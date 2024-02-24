@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap};
-use rusty_money::{iso, Money};
+use rusty_money::{iso, Money, MoneyError};
 use rusty_money::iso::Currency;
 use crate::sheet::Sheet;
 
@@ -21,8 +21,8 @@ impl From<Journal> for BalanceSheet<'_> {
         let Some(credit_amount_index) = schema.iter().position(|field_name| field_name == "credit_amount") else { todo!("no schema name credit_amount in {:?}", schema) };
 
         for mut record in rows {
-            let debit_amount = parse_money(&record[debit_amount_index]);
-            let credit_amount = parse_money(&record[credit_amount_index]);
+            let debit_amount = parse_money(&record[debit_amount_index]).unwrap();
+            let credit_amount = parse_money(&record[credit_amount_index]).unwrap();
             let account_name = record.remove(account_name_index);
             let entry = balance_amount_by_account_name
                 .entry(account_name)
@@ -34,19 +34,16 @@ impl From<Journal> for BalanceSheet<'_> {
     }
 }
 
-fn parse_money<'a>(value: &str) -> Money<'a, Currency> {
+fn parse_money<'a>(value: &str) -> Result<Money<'a, Currency>, MoneyError> {
     if value.is_empty() {
-        return Money::from_major(0, iso::USD);
+        return Ok(Money::from_major(0, iso::USD));
     }
 
     let value = value.trim();
     let value = value.trim_start_matches("$");
     let value = value.trim_start();
 
-    match Money::from_str(value, iso::USD) {
-        Ok(debit_amount) => debit_amount,
-        Err(error) => todo!("parse money <{}>: {error}", value)
-    }
+    Money::from_str(value, iso::USD)
 }
 
 impl BalanceSheet<'_> {

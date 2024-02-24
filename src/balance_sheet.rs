@@ -44,21 +44,22 @@ impl From<Journal> for BalanceSheet {
             account_names.insert(account_name.clone());
         }
 
-        let mut schema_vec = vec!["account_name".to_string()];
+        let mut schema_vec = vec!["account_type".to_string(), "account_name".to_string()];
         for year in &years {
-            schema_vec.insert(1, format!("balance_amount_{year}"));
+            schema_vec.insert(2, format!("balance_amount_{year}"));
         }
 
         let mut result = vec![schema_vec];
         for account_name in account_names {
-            let mut result_record = vec![account_name.to_string()];
+            let account_type = "";
+            let mut result_record = vec![account_type.to_string(), account_name.to_string()];
             let mut cumulative_balance_amount = zero.clone();
             for year in &years {
                 let key = (year.to_string(), account_name.to_string());
                 if let Some(balance_amount) = balance_amounts.remove(&key) {
                     cumulative_balance_amount += balance_amount;
                 }
-                result_record.insert(1, cumulative_balance_amount.to_string());
+                result_record.insert(2, cumulative_balance_amount.to_string());
             }
             result.push(result_record);
         }

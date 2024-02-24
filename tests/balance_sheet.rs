@@ -13,9 +13,9 @@ fn balance_sheet_from_journal() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024"],
-        vec!["credit account", "-$2.00"],
-        vec!["debit account", "$2.00"],
+        vec!["account_type", "account_name", "balance_amount_2024"],
+        vec!["", "credit account", "-$2.00"],
+        vec!["", "debit account", "$2.00"],
     ]);
 
     assert_eq!(actual, expected);
@@ -30,8 +30,8 @@ fn empty_amount_is_zero() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024"],
-        vec!["account", "$0"],
+        vec!["account_type", "account_name", "balance_amount_2024"],
+        vec!["", "account", "$0"],
     ]);
 
     assert_eq!(actual, expected);
@@ -46,8 +46,8 @@ fn google_accounting_number_format() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024"],
-        vec!["account", "$1.00"],
+        vec!["account_type", "account_name", "balance_amount_2024"],
+        vec!["", "account", "$1.00"],
     ]);
 
     assert_eq!(actual, expected);
@@ -62,8 +62,8 @@ fn ignore_account_name_outer_space() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024"],
-        vec!["account", "$0"],
+        vec!["account_type", "account_name", "balance_amount_2024"],
+        vec!["", "account", "$0"],
     ]);
 
     assert_eq!(actual, expected);
@@ -79,8 +79,8 @@ fn balance_per_year() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024", "balance_amount_2023"],
-        vec!["account", "$0.00", "-$1.00"],
+        vec!["account_type", "account_name", "balance_amount_2024", "balance_amount_2023"],
+        vec!["", "account", "$0.00", "-$1.00"],
     ]);
 
     assert_eq!(actual, expected);
@@ -97,9 +97,9 @@ fn balance_per_year_per_account() {
 
     let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
     let expected = Sheet::from(vec![
-        vec!["account_name", "balance_amount_2024", "balance_amount_2023"],
-        vec!["account 1", "-$1.00", "-$1.00"],
-        vec!["account 2", "$2.00", "$1.00"],
+        vec!["account_type", "account_name", "balance_amount_2024", "balance_amount_2023"],
+        vec!["", "account 1", "-$1.00", "-$1.00"],
+        vec!["", "account 2", "$2.00", "$1.00"],
     ]);
 
     assert_eq!(actual, expected);

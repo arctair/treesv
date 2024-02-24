@@ -5,10 +5,12 @@ use crate::sheet::{Schema, Sheet};
 
 pub struct BalanceSheet(pub Sheet);
 
+pub struct BalanceSheetConfiguration;
+
 pub struct Journal(pub Sheet);
 
-impl From<Journal> for BalanceSheet {
-    fn from(Journal(sheet): Journal) -> Self {
+impl From<(Journal,BalanceSheetConfiguration)> for BalanceSheet {
+    fn from((Journal(sheet), BalanceSheetConfiguration): (Journal, BalanceSheetConfiguration)) -> Self {
         let zero: Money<Currency> = Money::from_major(0, iso::USD);
 
         let mut rows = sheet.create_year_field("date", "year").rows();

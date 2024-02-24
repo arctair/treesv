@@ -5,12 +5,16 @@ use crate::sheet::{Schema, Sheet};
 
 pub struct BalanceSheet(pub Sheet);
 
-pub struct BalanceSheetConfiguration;
+pub struct BalanceSheetConfiguration {
+    pub account_type_field_name: String,
+}
 
 pub struct Journal(pub Sheet);
 
-impl From<(Journal,BalanceSheetConfiguration)> for BalanceSheet {
-    fn from((Journal(sheet), BalanceSheetConfiguration): (Journal, BalanceSheetConfiguration)) -> Self {
+impl From<(Journal, BalanceSheetConfiguration)> for BalanceSheet {
+    fn from((Journal(sheet), BalanceSheetConfiguration {
+        account_type_field_name
+    }): (Journal, BalanceSheetConfiguration)) -> Self {
         let zero: Money<Currency> = Money::from_major(0, iso::USD);
 
         let mut rows = sheet.create_year_field("date", "year").rows();
@@ -46,7 +50,7 @@ impl From<(Journal,BalanceSheetConfiguration)> for BalanceSheet {
             account_names.insert(account_name.clone());
         }
 
-        let mut schema_vec = vec!["account_type".to_string(), "account_name".to_string()];
+        let mut schema_vec = vec![account_type_field_name.clone(), "account_name".to_string()];
         for year in &years {
             schema_vec.insert(2, format!("balance_amount_{year}"));
         }

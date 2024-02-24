@@ -1,9 +1,9 @@
 use std::collections::{BTreeMap};
 use rusty_money::{iso, Money};
 use rusty_money::iso::Currency;
-use crate::sheet_v2::SheetV2;
+use crate::sheet::Sheet;
 
-pub struct Journal(pub SheetV2);
+pub struct Journal(pub Sheet);
 
 #[derive(Debug, PartialEq)]
 pub struct BalanceSheet<'a> {
@@ -39,12 +39,12 @@ fn parse_money<'a>(value: &str) -> Money<'a, Currency> {
 }
 
 impl BalanceSheet<'_> {
-    pub fn to_sheet(&self) -> SheetV2 {
+    pub fn to_sheet(&self) -> Sheet {
         let mut result = vec![];
         result.push(vec![String::from("account_name"), String::from("balance_amount")]);
         for (account_name, balance_amount) in &self.balance_amount_by_account_name {
             result.push(vec![account_name.to_string(), balance_amount.to_string()]);
         }
-        SheetV2::from(result)
+        Sheet::from(result)
     }
 }

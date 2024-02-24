@@ -2,11 +2,11 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 #[derive(Debug, PartialEq)]
-pub struct SheetV2 {
+pub struct Sheet {
     rows: Vec<Vec<String>>,
 }
 
-impl From<String> for SheetV2 {
+impl From<String> for Sheet {
     fn from(string: String) -> Self {
         let empty = vec![""];
         let mut rows = Vec::new();
@@ -21,7 +21,7 @@ impl From<String> for SheetV2 {
     }
 }
 
-impl From<File> for SheetV2 {
+impl From<File> for Sheet {
     fn from(file: File) -> Self {
         let reader = BufReader::new(file);
 
@@ -43,7 +43,7 @@ impl From<File> for SheetV2 {
     }
 }
 
-impl From<Vec<Vec<&str>>> for SheetV2 {
+impl From<Vec<Vec<&str>>> for Sheet {
     fn from(rows_references: Vec<Vec<&str>>) -> Self {
         let rows = rows_references.iter()
             .map(|row| row.iter().map(|&value| value.to_string()).collect())
@@ -52,13 +52,13 @@ impl From<Vec<Vec<&str>>> for SheetV2 {
     }
 }
 
-impl From<Vec<Vec<String>>> for SheetV2 {
+impl From<Vec<Vec<String>>> for Sheet {
     fn from(rows: Vec<Vec<String>>) -> Self {
         Self { rows }
     }
 }
 
-impl SheetV2 {
+impl Sheet {
     pub fn rows(&self) -> impl Iterator<Item=Vec<&str>> {
         self.rows.iter().map(|row| row.iter().map(|s| s as &str).collect::<Vec<&str>>())
     }

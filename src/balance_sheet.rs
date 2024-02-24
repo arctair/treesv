@@ -30,7 +30,7 @@ impl From<Journal> for BalanceSheet {
 
         let mut result = vec![];
 
-        result.push(vec![String::from("account_name"), String::from("balance_amount")]);
+        result.push(vec![String::from("account_name"), String::from("balance_amount_2024")]);
         for (account_name, balance_amount) in balance_amount_by_account_name {
             result.push(vec![account_name, balance_amount.to_string()]);
         }

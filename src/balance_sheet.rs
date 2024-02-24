@@ -20,7 +20,8 @@ impl From<Journal> for BalanceSheet {
         for mut record in rows {
             let debit_amount = parse_money(&record[debit_amount_index]).unwrap();
             let credit_amount = parse_money(&record[credit_amount_index]).unwrap();
-            let account_name = record.remove(account_name_index);
+            let mut account_name = record.remove(account_name_index);
+            trim_mut(&mut account_name);
             let entry = balance_amount_by_account_name
                 .entry(account_name)
                 .or_insert(Money::from_major(0, iso::USD));
@@ -48,4 +49,13 @@ fn parse_money<'a>(value: &str) -> Result<Money<'a, Currency>, MoneyError> {
     let value = value.trim_start();
 
     Money::from_str(value, iso::USD)
+}
+
+fn trim_mut(string: &mut String) {
+    while string.starts_with(" ") {
+        string.remove(0);
+    }
+    while string.ends_with(" ") {
+        string.pop();
+    }
 }

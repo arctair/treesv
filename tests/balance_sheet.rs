@@ -52,3 +52,19 @@ fn google_accounting_number_format() {
 
     assert_eq!(actual, expected);
 }
+
+#[test]
+fn ignore_account_name_outer_space() {
+    let journal_sheet = Sheet::from(vec![
+        vec!["account_name", "credit_amount", "debit_amount"],
+        vec![" account ", "", ""],
+    ]);
+
+    let BalanceSheet(actual) = BalanceSheet::from(Journal(journal_sheet));
+    let expected = Sheet::from(vec![
+        vec!["account_name", "balance_amount"],
+        vec!["account", "$0"],
+    ]);
+
+    assert_eq!(actual, expected);
+}

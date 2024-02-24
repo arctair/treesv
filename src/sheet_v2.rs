@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 #[derive(Debug, PartialEq)]
 pub struct SheetV2 {
     rows: Vec<Vec<String>>,
@@ -11,6 +14,28 @@ impl From<String> for SheetV2 {
             let record = line.split("\t").collect::<Vec<_>>();
             if record != empty {
                 rows.push(record);
+            }
+        }
+
+        Self::from(rows)
+    }
+}
+
+impl From<File> for SheetV2 {
+    fn from(file: File) -> Self {
+        let reader = BufReader::new(file);
+
+        let empty = vec![String::from("")];
+        let mut rows = Vec::new();
+        for line in reader.lines() {
+            match line {
+                Ok(line) => {
+                    let record = line.split("\t").map(&str::to_string).collect::<Vec<_>>();
+                    if record != empty {
+                        rows.push(record);
+                    }
+                }
+                Err(error) => todo!("{}", error)
             }
         }
 

@@ -30,14 +30,13 @@ impl From<File> for Sheet {
         let empty = vec![String::from("")];
         let mut rows = Vec::new();
         for line in reader.lines() {
-            match line {
-                Ok(line) => {
-                    let record = line.split("\t").map(&str::to_string).collect::<Vec<_>>();
-                    if record != empty {
-                        rows.push(record);
-                    }
+            if let Ok(line) = line {
+                let record = line.split("\t").map(&str::to_string).collect::<Vec<_>>();
+                if record != empty {
+                    rows.push(record);
                 }
-                Err(error) => todo!("{}", error)
+            } else if let Err(error) = line {
+                todo!("{}", error)
             }
         }
 
